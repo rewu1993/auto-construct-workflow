@@ -1,0 +1,6 @@
+Utility functions go to this folder
+* io_utils.py
+* plot_utils.py
+* training_utils.py
+* bayes_utils.py
+* test_utils.py

@@ -1,0 +1,16 @@
+All the data file should be a .csv file 
+
+Raw Data:
+datetime,path,cycle_number,work_ids(one hot),label
+
+Vehicle Data:
+datetime,path,cycle_number,vehicle_ids(prob)
+
+Classification Data:
+atetime,path,cycle_number,work_ids(prob)
+
+Final file:
+datetime,path,cycle_number,label, cls_prob, combined_prob
+
+Prediction file:
+datetime,path
