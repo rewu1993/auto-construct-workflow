@@ -2,6 +2,27 @@ from skimage.io import imread
 import matplotlib.pyplot as plt
 import numpy as np
 
+def select_short_period_df(df,start_date,end_date):
+    time_constrain = (df['datetime']>start_date) & (df['datetime']<end_date)
+    return df[time_constrain]
+
+"""Label Transfer Function"""
+def label_trans(r):
+    l1 = [2, 3, 4, 5, 6]
+    l2 = [7]
+    if r in l1:
+        r+=1
+    elif r in l2:
+        r+=2
+    return r
+
+def cls_label2_ori(res):
+    pred = []
+    for r in res:
+        pred.append(label_trans(r))
+    return pred
+
+"""Images"""
 def read_jpg(filename,show_shape = False):
     """A function that read jpg file
         Args: 

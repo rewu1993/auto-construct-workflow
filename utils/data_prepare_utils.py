@@ -1,6 +1,29 @@
 import pandas as pd
 import numpy as np
 from site_info import *
+from utils.common_utils import *
+
+"""Functions to get cls res data and combi obj detect result"""
+def get_classifier_result(file_name,predictor):
+    res = predictor.pred()
+    res_l = res.argmax(axis = 1)    
+    filenames = predictor.test_data_gen.filenames
+    res_dict = {'cls_pred' : cls_label2_ori(res_l),
+                'path': [f[54:] for f in filenames]
+    }
+    df_cls_res = pd.DataFrame.from_dict(res_dict)
+    return df_cls_res
+
+def combine_detect_cls(df_cls_res,df_yolo_veh,path_prefix = 'data/okaribe/data/'):
+    df_yolo_veh['path'] = path_prefix+df_yolo_veh['name'] 
+    
+    meaningless_cols = ['Unnamed: 0', '14', '15', '16', '17', '18', '19', '20', '21', '22',
+           '23', '24', '25', '26', '27', '28', '29', '30', '31']
+    df_yolo_veh_clean = df_yolo_veh.drop(columns=meaningless_cols)
+    df_combine = pd.merge(df_cls_res,df_yolo_veh_clean,on='path',how='inner')
+    return df_combine
+    
+
 
 """Function to get datetime and site info"""
 def convert_name_date_site(name):
