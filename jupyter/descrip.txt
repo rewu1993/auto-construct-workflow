@@ -1,4 +1,0 @@
-main functions in jupyter notebook goes here
-* prepare_data.ipynb
-* training.ipynb
-* prediction.ipynb

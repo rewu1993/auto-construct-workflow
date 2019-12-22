@@ -8,7 +8,7 @@ from site_info import *
 def get_image_detected_vehicle_dict(df):
     detected_vehicle_dict = {}
     for index,row in df.iterrows():
-        image_path = row['path']+'/'+row['name']
+        image_path = row['path']
         image_info = get_image_info(row)
         detected_vehicle_dict[image_path] = image_info
     return detected_vehicle_dict
@@ -16,10 +16,8 @@ def get_image_detected_vehicle_dict(df):
 def get_image_info(row):
     label = get_state_label(row)
     veh_list = get_detected_vehicles(row)
-    site_name = get_site_name(row)
     info = {'label': label,
-            'veh_list':veh_list,
-           'site_name': site_name}
+            'veh_list':veh_list,}
     return info
     
 def get_state_label(row):
@@ -36,14 +34,7 @@ def get_detected_vehicles(row,thre = 0.1):
         if img_veh_prob > thre:
             vehi_dict[veh] = img_veh_prob
     return vehi_dict
-            
-def get_site_name(row):
-    img_name = row['name']
-    for site_name in SITE_NAME_LIST:
-        if site_name in img_name:
-            return site_name
         
-
 
         
 '''Functions to extract info from the img_detected_veh_info dictionary '''       
@@ -54,14 +45,6 @@ def select_no_veh_paths(img_detected_veh_info):
         if not len(veh_list):
             no_veh_img_paths.append(image_path)
     return no_veh_img_paths
-
-def select_site(img_detected_veh_info,site_name):
-    site_img_detected_veh_info = {}
-    for image_path,info in img_detected_veh_info.items():
-        img_site_name = info['site_name']
-        if img_site_name == site_name:
-            site_img_detected_veh_info [image_path] = info
-    return site_img_detected_veh_info
 
 
 
@@ -102,7 +85,7 @@ def get_pattern(img_vehs):
 def create_pattern_df (image_paths, veh_patterns):
     names = get_names_from_paths(image_paths)
     df_dict = {'name' : names,
-        'img_path':image_paths,
+        'path':image_paths,
               'veh_pattern':veh_patterns}
     df_pattern = pd.DataFrame.from_dict(df_dict)
     return df_pattern

@@ -1,5 +1,75 @@
 import pandas as pd 
 import numpy as np
+from common_utils import *
+
+"""Functions for combine bayes with cls results"""
+def update_combined_res(df_time,start_end_time_pairs,prior_knowledge):
+    df_time['combined_pred'] = df_time['cls_pred']
+    acc,count = 0,0
+    anom_scores = []
+    for i in range (len(start_end_time_pairs)):
+        s,e = start_end_time_pairs[i]
+        cond = (df_time['datetime']>s) & (df_time['datetime']<e)
+
+        df_process = df_time[cond]
+        res_df,anom_score = get_bayes_pred(df_process,prior_knowledge)
+
+        cls_pred = np.array(df_process['cls_pred'])
+        bayes_pred = np.array(res_df['bayes_pred'])
+        combined_res = get_combined_result(cls_pred,bayes_pred)
+        
+        df_time.loc[cond,'combined_pred'] = combined_res
+        anom_scores.append(anom_score)
+        
+                
+        prob_combine = sum(combined_res==res_df['label'])/len(res_df)
+        prob_cls = sum(cls_pred==res_df['label'])/len(res_df)
+        print (prob_combine,prob_cls,anom_score)
+        acc+= prob_combine
+        count +=1
+    print ("final prob", acc/count)
+
+    return df_time,anom_score
+    
+def get_bayes_pred(df_process,prior_knowledge):
+    time_prob_df,veh_prob_df,veh_names = prior_knowledge
+    res_df = create_empty_df()
+    final_score = np.zeros(6)
+    penalty = 0.25
+    anomaly_score = 0
+    for index, row in df_process.iterrows():
+        time_prob = get_time_condition_prob(row,time_prob_df)
+        veh_probs = get_veh_condition_probs(row,veh_prob_df,veh_names)
+        final_score = final_score*(1-penalty)
+        for veh_prob in veh_probs:
+            time_state_prob = veh_prob*time_prob
+            final_score =  update_final_score(final_score,time_state_prob)
+        cur_state = get_res_df(row,final_score)      
+        if uncertain(final_score): 
+            anomaly_score += 1
+        res_df = res_df.append(cur_state)
+        anom_norm = anomaly_score/len(df_process)
+    return res_df,anom_norm
+
+
+def get_combined_result(cls_pred,bayes_pred):
+    combined_pred = []
+    for i in range(len(cls_pred)):
+        cls = cls_pred[i]
+        bayes = bayes_pred[i]
+        if (cls != bayes) and odd(i,cls_pred):
+            combined_pred.append(bayes)
+        else:
+            combined_pred.append(cls)
+    return np.array(combined_pred)      
+
+def odd(i,l):
+    prev = max(0,i-1)
+    nxt = min(len(l)-1,i+1)
+    if (l[i] != l[prev]) & (l[i] != l[nxt]):
+        return True
+    return False
+
 
 def calculate_condition_prob(condition_counts):
     return condition_counts/sum(condition_counts)
@@ -35,20 +105,20 @@ def get_detected_veh(row,veh_names):
     return set(detected_veh)
         
 """Results data frame"""   
-def create_empty_df(column_names = ['datetime','label','pred']):
+def create_empty_df(column_names = ['t','label','bayes_pred','path']):
     df = pd.DataFrame(columns=column_names)
     return df
 
 def get_res_df(row,final_score):
-    time = [row['datetime']]
+    time = [row['in_process_time']]
     label = [row['label']]
+    img_path = [row['path']]
     preds = interpret_final_score(final_score)
     df = create_empty_df()
     for i,pred in enumerate(preds):
-        pred = [float(pred[0])]
-        df.loc[i] = time+label+pred
+        pred = [label_trans(int(pred[0]))]
+        df.loc[i] = time+label+pred+img_path
     return df
-
 def interpret_final_score(final_score):
     max_prob = 0
     for i,state_score in enumerate(final_score):
@@ -61,10 +131,11 @@ def find_possible_state(max_prob,final_score):
     thre = 0.2
     possible_state = []    
     for i,state_score in enumerate(final_score):
-        if state_score > thre:   
-            score_diff = abs(max_prob-state_score)
-            if thre/5>score_diff:
-                possible_state.append((i,state_score))
+        if state_score == max_prob:   
+#             score_diff = abs(max_prob-state_score)
+#             if thre/10>score_diff:
+            possible_state.append((i,state_score))
+            break
     if not possible_state:
         possible_state.append((0,0.1))
     return possible_state

@@ -1,6 +1,6 @@
-# OP_LIST = ['Wait', 'Exc_MC', 'Drl_DB', 'Muc', 'Prf', 'Sht', 'Blt',
-#        'AGF', 'Prb', 'Oth']
-OP_LIST = ['Wait', 'Exc', 'Muc', 'Prf', 'Sht', 'Blt','AGF']
+OP_LIST = ['Wait', 'Exc_MC', 'Drl_DB', 'Muc', 'Prf', 'Sht', 'Blt',
+       'AGF', 'Prb', 'Oth']
+
 VEH_LIST = ['Excavator', 'Shovel', 'Jumbo',
        'Loader', 'Mixer', 'Person', 'Skymaster', 'Dump_truck', 'Erector',
        'Breaker', 'Mortar_truck', 'Shotcrete_equip', 'Erector_shotcrete_equip',
