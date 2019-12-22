@@ -1,6 +1,7 @@
 import pandas as pd 
 import numpy as np
 from common_utils import *
+from data_prepare_utils import filt_res
 
 """Functions for combine bayes with cls results"""
 def update_combined_res(df_time,start_end_time_pairs,prior_knowledge):
@@ -18,6 +19,7 @@ def update_combined_res(df_time,start_end_time_pairs,prior_knowledge):
         bayes_pred = np.array(res_df['bayes_pred'])
         combined_res = get_combined_result(cls_pred,bayes_pred)
         
+        
         df_time.loc[cond,'combined_pred'] = combined_res
         anom_scores.append(anom_score)
         
@@ -29,7 +31,7 @@ def update_combined_res(df_time,start_end_time_pairs,prior_knowledge):
         count +=1
     print ("final prob", acc/count)
 
-    return df_time,anom_score
+    return df_time,anom_scores
     
 def get_bayes_pred(df_process,prior_knowledge):
     time_prob_df,veh_prob_df,veh_names = prior_knowledge
@@ -61,7 +63,7 @@ def get_combined_result(cls_pred,bayes_pred):
             combined_pred.append(bayes)
         else:
             combined_pred.append(cls)
-    return np.array(combined_pred)      
+    return filt_res(np.array(combined_pred))      
 
 def odd(i,l):
     prev = max(0,i-1)

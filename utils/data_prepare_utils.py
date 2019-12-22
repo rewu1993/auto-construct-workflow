@@ -114,7 +114,7 @@ def find_repeat_data(data_list,val,thre=0):
     return len_list
             
             
-def filt_res(pred_list,thre_w=15,thre_r = 3):
+def filt_res(pred_list,thre_w=15,thre_r = 4):
     """A function that remove small chunks of rest/work from prediction"""
     pred_res_cycles = find_repeat_data(pred_list,0)
     
@@ -124,16 +124,16 @@ def filt_res(pred_list,thre_w=15,thre_r = 3):
         start,end = prc
         duration = end-start
         if duration <thre_r:
-            print ("remove wrong rest:: ",start,end)
-            filter_pred[start:end]=1
-    # remove work cycle
-    pred_work_cycles = find_repeat_data(filter_pred,1)        
-    for pwc in pred_work_cycles:
-        start,end = pwc
-        duration = end-start
-        if duration <thre_w:
-            print ("remove wrong works: ",start,end)
-            filter_pred[start:end]=0
+#            print ("remove wrong rest:: ",start,end)
+            filter_pred[start:end]=pred_list[start-1]
+#    # remove work cycle
+#    pred_work_cycles = find_repeat_data(filter_pred,1)        
+#    for pwc in pred_work_cycles:
+#        start,end = pwc
+ #       duration = end-start
+#        if duration <thre_w:
+#            print ("remove wrong works: ",start,end)
+#            filter_pred[start:end]=0
     return filter_pred
 
       
